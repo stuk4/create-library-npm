@@ -1,0 +1,33 @@
+{
+  "name": "create-npm-library",
+  "version": "1.0.0",
+  "description": "CLI for create npm library ",
+  "bin": {
+    "create-npm-library": "index.js",
+    "cnl": "index.js"
+  },
+  "files": [
+    "index.js",
+    "dist"
+  ],
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "dev": "unbuild --stub",
+    "build": "unbuild"
+  },
+  "keywords": [
+    "typescript"
+  ],
+  "author": "Bastian Perez",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/figlet": "^1.5.5",
+    "@types/inquirer": "^9.0.3",
+    "@types/node": "^18.14.5",
+    "colors": "^1.4.0",
+    "figlet": "^1.5.2",
+    "inquirer": "^9.1.4",
+    "typescript": "^4.9.5"
+  }
+}
