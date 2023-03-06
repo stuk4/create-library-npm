@@ -1,18 +1,8 @@
-import colors, { Color } from "colors";
-interface LibraryTypes {
-  name: string;
-  display: string;
-  color: Color;
-  variants: LibraryVariants[];
-}
-interface LibraryVariants {
-  name: string;
-  display: string;
-  color: Color;
-}
+import colors from "colors";
+import { LibraryType } from "./interfaces";
 
 export const DEFAULT_DIR = "library-npm-project";
-export const LIBRARY_TYPES: LibraryTypes[] = [
+export const LIBRARY_TYPES: LibraryType[] = [
   {
     name: "vanilla",
     display: "Vanilla",

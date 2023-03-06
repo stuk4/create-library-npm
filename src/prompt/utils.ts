@@ -1,4 +1,5 @@
 import fs from "node:fs";
+import path from "node:path";
 
 export const formatTargetDir = (targetDir: string | undefined) => {
   return targetDir?.trim().replace(/\/+$/g, "");
@@ -21,4 +22,27 @@ export const formatPackageName = (projectName: string) => {
     .replace(/\s+/g, "-")
     .replace(/^[._]/, "")
     .replace(/[^a-z\d\-~]+/g, "-");
+};
+export const cleanDir = (dir: string) => {
+  if (!fs.existsSync(dir)) {
+    return;
+  }
+  for (const file of fs.readdirSync(dir)) {
+    if (file === ".git") {
+      continue;
+    }
+    fs.rmSync(path.resolve(dir, file), { recursive: true, force: true });
+  }
+};
+
+export const copyDir = (src: string, dest: string) => {
+  const stat = fs.statSync(src);
+  if (stat.isDirectory()) {
+    copyDir(src, dest);
+  } else {
+    fs.copyFileSync(src, dest);
+  }
+};
+export const renameGit: Record<string, string | undefined> = {
+  _gitignore: ".gitignore",
 };
