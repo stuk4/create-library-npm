@@ -1,29 +1,41 @@
 import prompts, { Answers, PromptObject } from "prompts";
 import colors from "colors";
 import figlet from "figlet";
-import { cleanDir, formatTargetDir, isEmptyDir, renameGit } from "./utils";
+import {
+  cleanDir,
+  formatPackageName,
+  formatTargetDir,
+  isEmptyDir,
+  isValidPackageName,
+  renameGit,
+} from "./utils";
 import fs from "node:fs";
 import { DEFAULT_DIR, LIBRARY_TYPES } from "./constants";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { copyDir } from "./utils";
 import { LibraryType, IPackageJson } from "./interfaces";
+import minimist from "minimist";
 export class CLiCnL {
   private questions: PromptObject[];
-  private targetDir: string = DEFAULT_DIR;
   private cwd: string = process.cwd();
   private root: string = path.join(this.cwd, DEFAULT_DIR);
-
+  private argv = minimist<{
+    t?: string;
+    template?: string;
+  }>(process.argv.slice(2), { string: ["_"] });
   private answers:
     | Answers<
         "projectName" | "overwrite" | "packageName" | "libraryType" | "variant"
       >
     | undefined;
+  private targetDir: string = this.argvTargetDir || DEFAULT_DIR;
+
   constructor() {
     colors.enable();
     this.questions = [
       {
-        type: "text",
+        type: this.argvTargetDir ? null : "text",
         name: "projectName",
         message: "Project name:",
         initial: DEFAULT_DIR,
@@ -53,14 +65,29 @@ export class CLiCnL {
         name: "overwriteChecker",
       },
       {
-        type: "select",
+        type: () => (isValidPackageName(this.getProjectName) ? null : "text"),
+        name: "packageName",
+        message: "Package name:",
+        initial: () => formatPackageName(this.getProjectName),
+        validate: (dir) =>
+          isValidPackageName(dir) || "Invalid package.json name",
+      },
+      {
+        type:
+          this.argvTemplate && this.templates.includes(this.argvTemplate)
+            ? null
+            : "select",
         name: "libraryType",
-        message: "Select a type of library:",
+        message:
+          typeof this.argvTemplate === "string" &&
+          !this.templates.includes(this.argvTemplate)
+            ? `"${this.argvTemplate}" isn't a valid template. Please choose from below: `
+            : "Select a library type:",
         initial: 0,
         choices: LIBRARY_TYPES.map((library) => {
-          const frameworkColor = library.color;
+          const libraryColor = library.color;
           return {
-            title: frameworkColor(library.display || library.name),
+            title: libraryColor(library.display || library.name),
             value: library,
           };
         }),
@@ -95,6 +122,27 @@ export class CLiCnL {
       `${this.template}`
     );
   }
+
+  private get argvTargetDir(): string | undefined {
+    return formatTargetDir(this.argv._[0]);
+  }
+  private get argvTemplate(): string | undefined {
+    return this.argv.template || this.argv.t;
+  }
+  private get templates() {
+    const TEMPLATES = LIBRARY_TYPES.map(
+      (library) =>
+        (library.variants && library.variants.map((v) => v.name)) || [
+          library.name,
+        ]
+    ).reduce((a, b) => a.concat(b), []);
+    return TEMPLATES;
+  }
+  private get getProjectName() {
+    return this.targetDir === "."
+      ? path.basename(path.resolve())
+      : this.targetDir;
+  }
   public async run() {
     console.clear();
     console.log(
@@ -123,7 +171,6 @@ export class CLiCnL {
       });
       this.createDir();
       console.log(`\Creting project in ${this.root}...`);
-
       console.table({
         template: this.template,
         templateDir: this.templateDir,

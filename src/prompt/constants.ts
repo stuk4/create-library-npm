@@ -23,7 +23,7 @@ export const LIBRARY_TYPES: LibraryType[] = [
   {
     name: "react",
     display: "React",
-    color: colors.blue,
+    color: colors.cyan,
     variants: [
       {
         name: "react",
