@@ -12,11 +12,14 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "jest",
     "dev": "unbuild --stub",
-    "build": "unbuild"
+    "build": "unbuild",
+    "test": "jest"
   },
   "keywords": [
+    "create-npm-library",
+    "create library",
+    "cli",
     "typescript"
   ],
   "author": "Bastian Perez",

@@ -3,6 +3,7 @@ import colors from "colors";
 import figlet from "figlet";
 import {
   cleanDir,
+  copy,
   formatPackageName,
   formatTargetDir,
   isEmptyDir,
@@ -13,7 +14,6 @@ import fs from "node:fs";
 import { DEFAULT_DIR, LIBRARY_TYPES } from "./constants";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { copyDir } from "./utils";
 import { LibraryType, IPackageJson } from "./interfaces";
 import minimist from "minimist";
 export class CLiCnL {
@@ -176,6 +176,7 @@ export class CLiCnL {
         templateDir: this.templateDir,
       });
       this.writeTemplatesFiles();
+      this.writePkg();
     } catch (cancelled: any) {
       console.log(cancelled.message);
       return;
@@ -183,35 +184,51 @@ export class CLiCnL {
   }
 
   private createDir() {
-    if (this.answers?.overwrite) {
-      cleanDir(this.root);
-    } else if (!fs.existsSync(this.root)) {
-      fs.mkdirSync(this.root, { recursive: true });
+    try {
+      if (this.answers?.overwrite) {
+        cleanDir(this.root);
+      } else if (!fs.existsSync(this.root)) {
+        fs.mkdirSync(this.root, { recursive: true });
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
   private writeFile(file: string, content?: string) {
-    const targetPath = path.join(this.root, renameGit[file] ?? file);
-    console.table({ targetPath });
-    if (content) {
-      fs.writeFileSync(targetPath, content);
-    } else {
-      copyDir(path.join(this.templateDir, file), targetPath);
+    try {
+      const targetPath = path.join(this.root, renameGit[file] ?? file);
+      if (content) {
+        fs.writeFileSync(targetPath, content);
+      } else {
+        copy(path.join(this.templateDir, file), targetPath);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
 
   private writeTemplatesFiles() {
-    const files = fs.readdirSync(this.templateDir);
-    for (const file of files.filter((f) => f !== "package.json")) {
-      this.writeFile(file);
+    try {
+      const files = fs.readdirSync(this.templateDir);
+      for (const file of files.filter((f) => f !== "package.json")) {
+        this.writeFile(file);
+      }
+    } catch (error) {
+      console.log(error);
     }
   }
   private writePkg() {
-    const pkg: IPackageJson = JSON.parse(
-      fs.readFileSync(path.join(this.templateDir, `package.json`), "utf-8")
-    );
-    pkg.name = this.answers?.packageName;
-
-    this.writeFile("package.json", JSON.stringify(pkg, null, 2));
+    try {
+      const pkg: IPackageJson = JSON.parse(
+        fs.readFileSync(path.join(this.templateDir, `package.json`), "utf-8")
+      );
+      console.log(pkg);
+      pkg.name = this.answers?.packageName || this.getProjectName;
+      // TODO: LINE 380
+      this.writeFile("package.json", JSON.stringify(pkg, null, 2));
+    } catch (error) {
+      console.log(error);
+    }
   }
 }
