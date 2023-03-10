@@ -8,7 +8,7 @@ import {
   formatTargetDir,
   isEmptyDir,
   isValidPackageName,
-  renameGit,
+  renameFile,
 } from "./utils";
 import fs from "node:fs";
 import { DEFAULT_DIR, LIBRARY_TYPES } from "./constants";
@@ -16,20 +16,36 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { LibraryType, IPackageJson } from "./interfaces";
 import minimist from "minimist";
+import { Command, CommandOptions } from "commander";
+interface MyCommandOptions extends CommandOptions {
+  template?: string;
+}
+// const argvCommand: Command = new Command("create-npm-library")
+//   .version("1.0.0")
+//   .arguments("<project-directory>")
+//   .usage(`${"<project-directory>".green} [options]`)
+//   .option(
+//     "-t, --template <path-to-template>",
+//     "specify a template for the created project"
+//   )
+//   .parse(process.argv);
+// const options: MyCommandOptions = argvCommand.opts();
+// console.table({ argv: argvCommand.args, opts: options });
 export class CLiCnL {
   private questions: PromptObject[];
-  private cwd: string = process.cwd();
-  private root: string = path.join(this.cwd, DEFAULT_DIR);
   private argv = minimist<{
     t?: string;
     template?: string;
   }>(process.argv.slice(2), { string: ["_"] });
+  private cwd: string = process.cwd();
+  private root: string = path.join(this.cwd, DEFAULT_DIR);
+  private argvTemplate: string | undefined = this.argv.template || this.argv.t;
+  private targetDir: string = this.argvTargetDir || DEFAULT_DIR;
   private answers:
     | Answers<
         "projectName" | "overwrite" | "packageName" | "libraryType" | "variant"
       >
     | undefined;
-  private targetDir: string = this.argvTargetDir || DEFAULT_DIR;
 
   constructor() {
     colors.enable();
@@ -93,12 +109,12 @@ export class CLiCnL {
         }),
       },
       {
-        type: (framework: LibraryType) =>
-          framework && framework.variants ? "select" : null,
+        type: (libraryType: LibraryType) =>
+          libraryType && libraryType.variants ? "select" : null,
         name: "variant",
         message: "Select a variant:",
-        choices: (framework: LibraryType) =>
-          framework.variants.map((variant) => {
+        choices: (libraryType: LibraryType) =>
+          libraryType.variants.map((variant) => {
             const variantColor = variant.color;
             return {
               title: variantColor(variant.display || variant.name),
@@ -110,8 +126,13 @@ export class CLiCnL {
   }
 
   private get template(): string {
+    // TODO: CHANGE TO COMMANDER
     const template: string =
-      this.answers?.variant || this.answers?.libraryType.name;
+      this.answers?.variant ||
+      this.answers?.libraryType ||
+      this.argv.t ||
+      this.argv.template;
+
     return template;
   }
 
@@ -122,13 +143,11 @@ export class CLiCnL {
       `${this.template}`
     );
   }
-
+  // TODO: change to commander
   private get argvTargetDir(): string | undefined {
     return formatTargetDir(this.argv._[0]);
   }
-  private get argvTemplate(): string | undefined {
-    return this.argv.template || this.argv.t;
-  }
+
   private get templates() {
     const TEMPLATES = LIBRARY_TYPES.map(
       (library) =>
@@ -171,9 +190,18 @@ export class CLiCnL {
       });
       this.createDir();
       console.log(`\Creting project in ${this.root}...`);
+      // console.table({
+      //   template: this.template,
+      //   templateDir: this.templateDir,
+      // });
+      // console.table({
+      //   answersVariant: this.answers.variant,
+      //   answersLibraryType: this.answers.libraryType,
+      //   argT: this.argv.t,
+      //   argvTemplate: this.argv.template,
+      // });
       console.table({
-        template: this.template,
-        templateDir: this.templateDir,
+        argCero: this.argv._[0],
       });
       this.writeTemplatesFiles();
       this.writePkg();
@@ -197,7 +225,7 @@ export class CLiCnL {
 
   private writeFile(file: string, content?: string) {
     try {
-      const targetPath = path.join(this.root, renameGit[file] ?? file);
+      const targetPath = path.join(this.root, renameFile[file] ?? file);
       if (content) {
         fs.writeFileSync(targetPath, content);
       } else {
@@ -223,7 +251,7 @@ export class CLiCnL {
       const pkg: IPackageJson = JSON.parse(
         fs.readFileSync(path.join(this.templateDir, `package.json`), "utf-8")
       );
-      console.log(pkg);
+
       pkg.name = this.answers?.packageName || this.getProjectName;
       // TODO: LINE 380
       this.writeFile("package.json", JSON.stringify(pkg, null, 2));

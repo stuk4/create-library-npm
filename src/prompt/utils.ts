@@ -56,6 +56,7 @@ export const copyDir = (srcDir: string, destDir: string) => {
     copy(srcFile, destFile);
   }
 };
-export const renameGit: Record<string, string | undefined> = {
+export const renameFile: Record<string, string | undefined> = {
   _gitignore: ".gitignore",
+  _babelrc: ".babelrc",
 };
