@@ -1,7 +1,7 @@
 {
   "name": "create-npm-library",
   "version": "1.0.0",
-  "description": "CLI for create npm library ",
+  "description": "A tool to quickly start a npm library project",
   "bin": {
     "create-npm-library": "index.js",
     "cnl": "index.js"
@@ -19,6 +19,8 @@
   "keywords": [
     "create-npm-library",
     "create library",
+    "npm",
+    "library",
     "cli",
     "typescript"
   ],
