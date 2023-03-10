@@ -7,6 +7,5 @@ export default {
       minify: true,
     },
   },
-  // Generates .d.ts declaration file
-  declaration: true,
+  declaration: false,
 };

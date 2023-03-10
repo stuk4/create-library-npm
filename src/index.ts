@@ -1,11 +1,4 @@
-import { inquirerMenu, pause } from "./helpers/inquirer";
+import { CLiCnL } from "./prompt/prompts";
 
-const main = async () => {
-  let opt = undefined;
-  do {
-    opt = await inquirerMenu();
-    if (opt !== 0) await pause();
-  } while (opt !== 0);
-};
-
-main();
+const cliManager = new CLiCnL();
+cliManager.run();
