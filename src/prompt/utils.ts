@@ -1,5 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+import { IPackageJson } from "./interfaces";
 
 export const formatTargetDir = (targetDir: string | undefined) => {
   return targetDir?.trim().replace(/\/+$/g, "");
@@ -59,4 +61,23 @@ export const copyDir = (srcDir: string, destDir: string) => {
 export const renameFile: Record<string, string | undefined> = {
   _gitignore: ".gitignore",
   _babelrc: ".babelrc",
+};
+export const pkgFromUserAgent = (
+  userAgent: string | undefined
+): { name: string; version: string } | undefined => {
+  if (!userAgent) return undefined;
+  const pkgSpec = userAgent.split(" ")[0];
+  const pkgSpecArr = pkgSpec.split("/");
+  return {
+    name: pkgSpecArr[0],
+    version: pkgSpecArr[1],
+  };
+};
+export const myPackageJson = (): IPackageJson => {
+  const pathPkg: string = path.resolve(
+    fileURLToPath(import.meta.url),
+    "../../../",
+    `package.json`
+  );
+  return JSON.parse(fs.readFileSync(pathPkg, "utf-8"));
 };

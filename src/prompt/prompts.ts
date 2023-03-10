@@ -8,6 +8,7 @@ import {
   formatTargetDir,
   isEmptyDir,
   isValidPackageName,
+  pkgFromUserAgent,
   renameFile,
 } from "./utils";
 import fs from "node:fs";
@@ -15,31 +16,31 @@ import { DEFAULT_DIR, LIBRARY_TYPES } from "./constants";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { LibraryType, IPackageJson } from "./interfaces";
-import minimist from "minimist";
 import { Command, CommandOptions } from "commander";
+import { myPackageJson } from "./utils";
+
 interface MyCommandOptions extends CommandOptions {
   template?: string;
 }
-// const argvCommand: Command = new Command("create-npm-library")
-//   .version("1.0.0")
-//   .arguments("<project-directory>")
-//   .usage(`${"<project-directory>".green} [options]`)
-//   .option(
-//     "-t, --template <path-to-template>",
-//     "specify a template for the created project"
-//   )
-//   .parse(process.argv);
-// const options: MyCommandOptions = argvCommand.opts();
-// console.table({ argv: argvCommand.args, opts: options });
+
 export class CLiCnL {
   private questions: PromptObject[];
-  private argv = minimist<{
-    t?: string;
-    template?: string;
-  }>(process.argv.slice(2), { string: ["_"] });
+
+  private argvCommand: Command = new Command(myPackageJson().name)
+    .version(myPackageJson().version)
+    .option("<project-directory>")
+    .usage(`${"<project-directory>".green} [options]`)
+    .option(
+      "-t, --template <path-to-template>",
+      "specify a template for the created project"
+    )
+    .parse(process.argv);
+  private options: MyCommandOptions = this.argvCommand.opts();
   private cwd: string = process.cwd();
   private root: string = path.join(this.cwd, DEFAULT_DIR);
-  private argvTemplate: string | undefined = this.argv.template || this.argv.t;
+  private argvTemplate: string | undefined = this.options.template;
+  private pkgInfo = pkgFromUserAgent(process.env.npm_config_user_agent);
+  private pkgManager = this.pkgInfo ? this.pkgInfo.name : "npm";
   private targetDir: string = this.argvTargetDir || DEFAULT_DIR;
   private answers:
     | Answers<
@@ -49,6 +50,7 @@ export class CLiCnL {
 
   constructor() {
     colors.enable();
+
     this.questions = [
       {
         type: this.argvTargetDir ? null : "text",
@@ -126,12 +128,10 @@ export class CLiCnL {
   }
 
   private get template(): string {
-    // TODO: CHANGE TO COMMANDER
     const template: string =
       this.answers?.variant ||
       this.answers?.libraryType ||
-      this.argv.t ||
-      this.argv.template;
+      this.options.template;
 
     return template;
   }
@@ -143,9 +143,9 @@ export class CLiCnL {
       `${this.template}`
     );
   }
-  // TODO: change to commander
+
   private get argvTargetDir(): string | undefined {
-    return formatTargetDir(this.argv._[0]);
+    return formatTargetDir(this.argvCommand.args[0]);
   }
 
   private get templates() {
@@ -161,54 +161,6 @@ export class CLiCnL {
     return this.targetDir === "."
       ? path.basename(path.resolve())
       : this.targetDir;
-  }
-  public async run() {
-    console.clear();
-    console.log(
-      colors.green(
-        figlet.textSync("CNL", {
-          font: "3D-ASCII",
-          horizontalLayout: "full",
-          verticalLayout: "full",
-          width: 80,
-          whitespaceBreak: true,
-        })
-      )
-    );
-    console.log("======================================".green);
-    console.log(`           Creae ${"NPM".blue} library`.white);
-    console.log("======================================\n".green);
-    // let answers: Answers<
-    //   "projectName" | "overwrite" | "packageName" | "libraryType" | "variant"
-    // >;
-
-    try {
-      this.answers = await prompts(this.questions, {
-        onCancel: () => {
-          throw new Error("✖".red + " Operation cancelled");
-        },
-      });
-      this.createDir();
-      console.log(`\Creting project in ${this.root}...`);
-      // console.table({
-      //   template: this.template,
-      //   templateDir: this.templateDir,
-      // });
-      // console.table({
-      //   answersVariant: this.answers.variant,
-      //   answersLibraryType: this.answers.libraryType,
-      //   argT: this.argv.t,
-      //   argvTemplate: this.argv.template,
-      // });
-      console.table({
-        argCero: this.argv._[0],
-      });
-      this.writeTemplatesFiles();
-      this.writePkg();
-    } catch (cancelled: any) {
-      console.log(cancelled.message);
-      return;
-    }
   }
 
   private createDir() {
@@ -253,10 +205,66 @@ export class CLiCnL {
       );
 
       pkg.name = this.answers?.packageName || this.getProjectName;
-      // TODO: LINE 380
       this.writeFile("package.json", JSON.stringify(pkg, null, 2));
     } catch (error) {
       console.log(error);
+    }
+  }
+  private instructions() {
+    const cdProjectName = path.relative(this.cwd, this.root);
+    console.log(`\n${"Done".green}. Now run:\n`);
+    if (this.root !== this.cwd) {
+      console.log(
+        `  cd ${
+          cdProjectName.includes(" ") ? `"${cdProjectName}"` : cdProjectName
+        }`
+      );
+    }
+    switch (this.pkgManager) {
+      case "yarn":
+        console.log("  yarn");
+        break;
+      default:
+        console.log(`  ${this.pkgManager} install`);
+        break;
+    }
+    console.log();
+  }
+
+  public async run() {
+    console.clear();
+    console.log(
+      colors.green(
+        figlet.textSync("CNL", {
+          font: "3D-ASCII",
+          horizontalLayout: "full",
+          verticalLayout: "full",
+          width: 80,
+          whitespaceBreak: true,
+        })
+      )
+    );
+    console.log("======================================".green);
+    console.log(`           Creae ${"NPM".blue} library`.white);
+    console.log("======================================\n".green);
+    // let answers: Answers<
+    //   "projectName" | "overwrite" | "packageName" | "libraryType" | "variant"
+    // >;
+
+    try {
+      this.answers = await prompts(this.questions, {
+        onCancel: () => {
+          throw new Error("✖".red + " Operation cancelled");
+        },
+      });
+      this.createDir();
+      console.log(`\Creating project in ${this.root}...`);
+      this.writeTemplatesFiles();
+      this.writePkg();
+      this.instructions();
+    } catch (cancelled: any) {
+      console.log(cancelled.message);
+      return;
     }
   }
 }
