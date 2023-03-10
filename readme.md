@@ -1,5 +1,7 @@
 # create-npm-library
 
+A tool to quickly start a npm library project
+
 ## Create Your First library
 
 > **Compatibility Note:**
