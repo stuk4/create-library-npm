@@ -1,5 +1,5 @@
 {
-  "name": "create-npm-library",
+  "name": "create-library-npm",
   "version": "1.0.0",
   "description": "A tool to quickly start a npm library project",
   "bin": {

@@ -1,4 +1,4 @@
-# create-npm-library
+# create-library-npm
 
 A tool to quickly start a npm library project
 
@@ -10,13 +10,13 @@ A tool to quickly start a npm library project
 With NPM:
 
 ```bash
-$ npm create npm library
+$ npm create library npm
 ```
 
 With Yarn:
 
 ```bash
-$ yarn create npm library
+$ yarn create library npm
 ```
 
 Then follow the prompts!
@@ -25,10 +25,10 @@ You can also directly specify the project name and the template you want to use 
 
 ```bash
 # npm
-npm create npm library my-library --template react
+npm create library npm my-library --template react
 
 # yarn
-yarn create npm library my-library --template react-ts
+yarn create library npm my-library --template react-ts
 
 
 ```
