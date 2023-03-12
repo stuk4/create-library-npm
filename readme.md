@@ -4,38 +4,35 @@ A tool to quickly start a npm library project
 
 ## Create Your First library
 
-> **Compatibility Note:**
-> Requires [Node.js](https://nodejs.org/en/) version 14.18+, 16+. However, some templates require a higher Node.js version to work, please upgrade if your package manager warns about it.
+### Installation:
 
 With NPM:
 
 ```bash
-$ npm create library npm
+$ npm install -g create-library-npm
 ```
 
 With Yarn:
 
 ```bash
-$ yarn create library npm
+$ yarn add -g create-library-npm
 ```
 
 Then follow the prompts!
 
 You can also directly specify the project name and the template you want to use via additional command line options. For example:
 
+> you can use `.` for the project name to create in the current directory.
+
 ```bash
-# npm
-npm create library npm my-library --template react
+cln my-library --template react
+```
 
-# yarn
-yarn create library npm my-library --template react-ts
-
-
+```bash
+create-library-npm my-library --template react
 ```
 
 Currently supported template presets include:
 
 - `react`
 - `react-ts`
-
-You can use `.` for the project name to create in the current directory.
