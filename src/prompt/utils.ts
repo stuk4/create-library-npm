@@ -75,8 +75,8 @@ export const pkgFromUserAgent = (
 };
 export const myPackageJson = (): IPackageJson => {
   const pathPkg: string = path.resolve(
-    fileURLToPath(import.meta.url),
-    "../../../",
+    fileURLToPath(`file://${__dirname}`),
+    "../../",
     `package.json`
   );
   return JSON.parse(fs.readFileSync(pathPkg, "utf-8"));

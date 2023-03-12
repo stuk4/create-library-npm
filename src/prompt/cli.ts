@@ -28,7 +28,7 @@ export class CLiCnL {
 
   private argvCommand: Command = new Command(myPackageJson().name)
     .version(myPackageJson().version)
-    .option("<project-directory>")
+    .option("<project-directory>", "Path to save library")
     .usage(`${"<project-directory>".green} [options]`)
     .option(
       "-t, --template <path-to-template>",
@@ -138,8 +138,8 @@ export class CLiCnL {
 
   private get templateDir(): string {
     return path.resolve(
-      fileURLToPath(import.meta.url),
-      "../../../templates",
+      fileURLToPath(`file://${__dirname}`),
+      "../../templates",
       `${this.template}`
     );
   }
@@ -235,7 +235,7 @@ export class CLiCnL {
     console.clear();
     console.log(
       colors.green(
-        figlet.textSync("CNL", {
+        figlet.textSync("CLN", {
           font: "3D-ASCII",
           horizontalLayout: "full",
           verticalLayout: "full",
@@ -245,11 +245,8 @@ export class CLiCnL {
       )
     );
     console.log("======================================".green);
-    console.log(`           Creae ${"NPM".blue} library`.white);
+    console.log(`           Create ${"NPM".blue} library`.white);
     console.log("======================================\n".green);
-    // let answers: Answers<
-    //   "projectName" | "overwrite" | "packageName" | "libraryType" | "variant"
-    // >;
 
     try {
       this.answers = await prompts(this.questions, {
