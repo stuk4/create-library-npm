@@ -28,7 +28,7 @@ export class CLiCnL {
 
   private argvCommand: Command = new Command(myPackageJson().name)
     .version(myPackageJson().version)
-    .option("<project-directory>")
+    .option("<project-directory>", "Path to save library")
     .usage(`${"<project-directory>".green} [options]`)
     .option(
       "-t, --template <path-to-template>",
@@ -247,9 +247,6 @@ export class CLiCnL {
     console.log("======================================".green);
     console.log(`           Create ${"NPM".blue} library`.white);
     console.log("======================================\n".green);
-    // let answers: Answers<
-    //   "projectName" | "overwrite" | "packageName" | "libraryType" | "variant"
-    // >;
 
     try {
       this.answers = await prompts(this.questions, {
