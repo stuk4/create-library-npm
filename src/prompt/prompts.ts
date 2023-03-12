@@ -138,8 +138,8 @@ export class CLiCnL {
 
   private get templateDir(): string {
     return path.resolve(
-      fileURLToPath(import.meta.url),
-      "../../../templates",
+      fileURLToPath(`file://${process.cwd()}`),
+      "./templates",
       `${this.template}`
     );
   }
