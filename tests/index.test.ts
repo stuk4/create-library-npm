@@ -40,7 +40,7 @@ describe("CLI tool create-library-npm", () => {
     expect(output).toContain("Select a library type:");
   });
 
-  it("prompts for the library on not supplying a value for --template", () => {
+  it("prompts for the libraryg on not supplying a value for --template", () => {
     try {
       childProcess.execSync(`cnl ${projectName} --template`, {
         encoding: "utf8",
